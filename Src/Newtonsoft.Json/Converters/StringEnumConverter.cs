@@ -27,6 +27,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
 using System.Reflection;
 using System.Runtime.Serialization;
@@ -235,7 +236,20 @@ namespace Newtonsoft.Json.Converters
                         return null;
                     }
 
-                    return EnumUtils.ParseEnum(t, NamingStrategy, enumText!, !AllowIntegerValues);
+                    try
+                    {
+                      return EnumUtils.ParseEnum(t, NamingStrategy, enumText!, !AllowIntegerValues);
+                    }
+                    catch (ArgumentException)
+                    {
+                      if (Attribute.GetCustomAttribute(objectType, typeof(DefaultValueAttribute), false) is DefaultValueAttribute defaultValueAttribute)
+                      {
+                        // If DefaultValueAttribute is set on this enum, then use it as default value
+                        return defaultValueAttribute.Value;
+                      }
+                    }
+
+                    return null;
                 }
 
                 if (reader.TokenType == JsonToken.Integer)

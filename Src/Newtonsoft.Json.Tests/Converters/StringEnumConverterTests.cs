@@ -25,6 +25,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Text;
@@ -952,6 +953,14 @@ Parameter name: namingStrategyType", "Value cannot be null. (Parameter 'namingSt
             First
         }
 
+        [JsonConverter(typeof(StringEnumConverter))]
+        [DefaultValue(First)]
+        public enum EnumMemberWithDefaultValue
+        {
+          [EnumMember(Value = "first_value")]
+          First
+        }
+
         [Test]
         public void DeserializeEnumCaseIncensitive_ByEnumMemberValue_UpperCase()
         {
@@ -960,6 +969,13 @@ Parameter name: namingStrategyType", "Value cannot be null. (Parameter 'namingSt
         }
 
         [Test]
+        public void DeserializeEnumCaseIncensitive_UnknownEnumValue()
+        {
+          var e = JsonConvert.DeserializeObject<EnumMemberWithDefaultValue>(@"""DOES NOT EXIST""", new StringEnumConverter());
+          Assert.AreEqual(EnumMemberWithDefaultValue.First, e);
+        }
+
+    [Test]
         public void DeserializeEnumCaseIncensitive_ByEnumMemberValue_MixedCase()
         {
             var e = JsonConvert.DeserializeObject<EnumMemberDoesNotMatchName>(@"""First_Value""", new StringEnumConverter());
